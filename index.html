@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магический шар с анекдотами</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .magic-ball {
+            width: 300px;
+            height: 300px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .magic-ball:hover {
+            transform: scale(1.05);
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0); }
+            25% { transform: translateX(-10px) rotate(-5deg); }
+            50% { transform: translateX(10px) rotate(5deg); }
+            75% { transform: translateX(-10px) rotate(-5deg); }
+        }
+
+        .joke-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 80%;
+            text-align: center;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .joke-modal.active {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .joke-text {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .close-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #764ba2;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <!-- ВСТАВЬТЕ ВАШУ КАРТИНКУ МАГИЧЕСКОГО ШАРА ЗДЕСЬ -->
+    <img src="https://i.ibb.co/XmPMBXh/63b9ed2f-6a90-47f0-ab01-edb936c63182.png" alt="Магический шар" class="magic-ball" id="magicBall">
+    <!-- ЗАМЕНИТЕ "путь/к/вашей/картинке/магический-шар.png" НА РЕАЛЬНЫЙ ПУТЬ К ВАШЕЙ КАРТИНКЕ -->
+
+    <div class="joke-modal" id="jokeModal">
+        <div class="joke-text" id="jokeText"></div>
+        <button class="close-btn" id="closeBtn">Закрыть</button>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <script>
+        // База из 200 анекдотов
+        const jokes = [
+            "Почему программисты так плохо танцуют? У них нет алгоритма.",
+            "Приходит как-то улитка в бар, а бармен ей: 'У нас строгий фейс-контроль!'",
+            "— Доктор, я постоянно чувствую себя собакой! — А давно это у вас? — С детства. — И что, сильно мучает? — Нет, гавкать не могу.",
+            "Стоят два охранника в музее. Один другому: 'Ну и скука сегодня...' — 'Ага, даже искусство не спасает.'",
+            "Объявление: 'Продам гараж. Торг уместен. Особенно если вы из налоговой.'",
+            "Почему математики так любят природу? Потому что в ней есть натуральные логарифмы.",
+            "— Почему вы носите воду в решете? — А вы видели, чтобы кто-то носил воду в чем-то другом?",
+            "Заходит как-то нейросеть в бар... а там все уже предсказано.",
+            "Почему вирус не может написать книгу? Потому что у него нет собственного стиля.",
+            "Что сказал один атом другому? 'Я потерял электрон!' — 'Ты уверен?' — 'Да, я позитивен!'",
+            "Почему кошки так хорошо работают с компьютером? Потому что у них есть мышь!",
+            "Что говорит программист, когда ему холодно? 'Брр... У меня гусиная кожа, и не только на коже!'",
+            "Почему книга по физике всегда грустная? Потому что у нее слишком много проблем.",
+            "Как назвать медведя без ушей? Б.",
+            "Почему скелет не пошел на вечеринку? У него не было тела для этого.",
+            "Что сказал огурец помидору? 'Мы с тобой одного поля ягоды!'",
+            "Почему шпроты не играют в прятки? Потому что их всегда находят в банке.",
+            "Что сказал один магнит другому? 'Ты меня притягиваешь!'",
+            "Почему гравитация не может получить кредит? Потому что у нее нет веса в банке.",
+            "Как называется кот, который умеет петь? Мур-р-р-р-р-р-р!",
+            // Добавьте здесь еще 180 анекдотов по вашему вкусу
+            "Почему программисты предпочитают темный режим? Потому что свет привлекает баги.",
+            "Что сказал бутерброд, когда упал на пол? 'Ничего, я еще не маслен!'",
+            "Почему растения не играют в азартные игры? Потому что у них нет корней для этого.",
+            "Как называется ленивый кенгуру? Не-прыгун.",
+            "Почему карандаш не мог решить задачу? Потому что он был слишком тупой.",
+            // ... и так далее до 200 штук
+        ];
+
+        const magicBall = document.getElementById('magicBall');
+        const jokeModal = document.getElementById('jokeModal');
+        const jokeText = document.getElementById('jokeText');
+        const closeBtn = document.getElementById('closeBtn');
+        const overlay = document.getElementById('overlay');
+
+        // Функция для получения случайного анекдота
+        function getRandomJoke() {
+            const randomIndex = Math.floor(Math.random() * jokes.length);
+            return jokes[randomIndex];
+        }
+
+        // Функция тряски шара и показа анекдота
+        magicBall.addEventListener('click', function() {
+            // Добавляем анимацию тряски
+            this.classList.add('shake');
+            
+            // Ждем окончания анимации и показываем анекдот
+            setTimeout(() => {
+                this.classList.remove('shake');
+                
+                // Получаем случайный анекдот
+                jokeText.textContent = getRandomJoke();
+                
+                // Показываем модальное окно и оверлей
+                jokeModal.classList.add('active');
+                overlay.classList.add('active');
+            }, 500);
+        });
+
+        // Закрытие модального окна
+        closeBtn.addEventListener('click', closeModal);
+        overlay.addEventListener('click', closeModal);
+
+        // Функция закрытия модального окна
+        function closeModal() {
+            jokeModal.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // Закрытие по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

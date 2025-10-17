@@ -42,10 +42,7 @@
             transition: transform 0.3s ease;
             user-select: none;
             -webkit-user-select: none;
-        }
-
-        .magic-ball:hover {
-            transform: scale(1.05);
+            -webkit-touch-callout: none;
         }
 
         .magic-ball:active {
@@ -220,48 +217,12 @@
                 max-width: 200px;
             }
         }
-
-        /* Поддержка темной темы */
-        @media (prefers-color-scheme: dark) {
-            .joke-modal {
-                background: #2d3748;
-                color: white;
-            }
-            
-            .joke-text {
-                color: #e2e8f0;
-            }
-        }
-
-        /* Улучшения для iOS */
-        @supports (-webkit-touch-callout: none) {
-            .joke-modal {
-                -webkit-overflow-scrolling: touch;
-            }
-        }
-
-        /* Анимация загрузки */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- ВСТАВЬТЕ ВАШУ КАРТИНКУ МАГИЧЕСКОГО ШАРА ЗДЕСЬ -->
-        <img src="ball.png" alt="Магический шар" class="magic-ball" id="magicBall">
+        <img src="путь/к/вашей/картинке/магический-шар.png" alt="Магический шар" class="magic-ball" id="magicBall">
         <!-- ЗАМЕНИТЕ "путь/к/вашей/картинке/магический-шар.png" НА РЕАЛЬНЫЙ ПУТЬ К ВАШЕЙ КАРТИНКЕ -->
         
         <div class="instruction">
@@ -290,7 +251,12 @@
             "Заходит как-то нейросеть в бар... а там все уже предсказано.",
             "Почему вирус не может написать книгу? Потому что у него нет собственного стиля.",
             "Что сказал один атом другому? 'Я потерял электрон!' — 'Ты уверен?' — 'Да, я позитивен!'",
-            // ... добавьте остальные анекдоты
+            "Почему кошки так хорошо работают с компьютером? Потому что у них есть мышь!",
+            "Что говорит программист, когда ему холодно? 'Брр... У меня гусиная кожа, и не только на коже!'",
+            "Почему книга по физике всегда грустная? Потому что у нее слишком много проблем.",
+            "Как назвать медведя без ушей? Б.",
+            "Почему скелет не пошел на вечеринку? У него не было тела для этого.",
+            // ... добавьте остальные анекдоты до 200 штук
         ];
 
         const magicBall = document.getElementById('magicBall');
@@ -329,20 +295,26 @@
             }, 500);
         }
 
-        // Обработчики событий для мобильных устройств
+        // ОСНОВНОЙ ОБРАБОТЧИК ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
         magicBall.addEventListener('click', shakeBallAndShowJoke);
         
-        // Также добавляем обработчик для touch событий
+        // Дополнительный обработчик для touch событий
+        magicBall.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            shakeBallAndShowJoke();
+        });
+
+        // Предотвращаем стандартное поведение при touchstart
         magicBall.addEventListener('touchstart', function(e) {
-            e.preventDefault(); // Предотвращаем выделение текста
+            e.preventDefault();
         });
 
         // Закрытие модального окна
         closeBtn.addEventListener('click', closeModal);
         overlay.addEventListener('click', closeModal);
 
-        // Также закрытие по тапу на оверлей
-        overlay.addEventListener('touchstart', closeModal);
+        // Также закрытие по тапу на оверлей для мобильных
+        overlay.addEventListener('touchend', closeModal);
 
         // Функция закрытия модального окна
         function closeModal() {
@@ -369,10 +341,8 @@
 
         // Обработка изменения ориентации
         window.addEventListener('orientationchange', function() {
-            // Небольшая задержка для стабилизации размера экрана
             setTimeout(() => {
                 if (jokeModal.classList.contains('active')) {
-                    // Перецентрируем модальное окно при повороте
                     jokeModal.style.transform = 'translate(-50%, -50%) scale(1)';
                 }
             }, 300);
@@ -392,7 +362,7 @@
             originalShakeFunction();
         };
 
-        console.log('✨ Магический шар готов к работе на мобильных устройствах!');
+        // УБИРАЕМ console.log который был здесь
     </script>
 </body>
 </html>
